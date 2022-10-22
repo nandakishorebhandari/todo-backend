@@ -86,19 +86,6 @@ app.get("/todos/", async (request, response) => {
   response.send(data);
 });
 
-app.get("/todos/:todoId/", async (request, response) => {
-  const { todoId } = request.params;
-
-  const getTodoQuery = `
-    SELECT
-      *
-    FROM
-      todo
-    WHERE
-      id = ${todoId};`;
-  const todo = await database.get(getTodoQuery);
-  response.send(todo);
-});
 
 app.post("/todos/", async (request, response) => {
   const { todo, status, username } = request.body;
