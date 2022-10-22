@@ -47,17 +47,11 @@ const hasUsernameAndStatusProperties = (requestQuery) => {
     requestQuery.username !== undefined && requestQuery.status !== undefined
   );
 };
-const hasUsernameAndTodoProperties = (requestQuery) => {
-  return requestQuery.username !== undefined && requestQuery.todo !== undefined;
-};
 
 const hasUsernameProperty = (requestQuery) => {
   return requestQuery.username !== undefined;
 };
 
-const hasStatusProperty = (requestQuery) => {
-  return requestQuery.status !== undefined;
-};
 
 app.get("/todos/", async (request, response) => {
   console.log(request.query);
@@ -72,7 +66,6 @@ app.get("/todos/", async (request, response) => {
       FROM
         todo 
       WHERE
-        todo LIKE '%${search_q}%'
         AND status = '${status}'
         AND username = '${username}';`;
       break;
@@ -84,16 +77,6 @@ app.get("/todos/", async (request, response) => {
         todo 
       WHERE
         username = '${username}';`;
-      break;
-    case hasUsernameAndTodoProperties(request.query):
-      getTodosQuery = `
-        SELECT
-            *
-        FROM
-            todo 
-        WHERE
-            todo LIKE '%${search_q}%'
-            AND username = '${username}';`;
       break;
     default:
       return response.send([]);
@@ -118,7 +101,7 @@ app.get("/todos/:todoId/", async (request, response) => {
 });
 
 app.post("/todos/", async (request, response) => {
-  const { id, todo, priority, status, username } = request.body;
+  const { todo, status, username } = request.body;
   const postTodoQuery = `
   INSERT INTO
     todo (todo, status, username)
