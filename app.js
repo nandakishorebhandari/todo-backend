@@ -19,18 +19,17 @@ const initializeDbAndServer = async () => {
     });
     const sql_create = `CREATE TABLE IF NOT EXISTS todo (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        priority VARCHAR(100) NOT NULL,
         status VARCHAR(100) NOT NULL,
         todo TEXT,
         username TEXT
       );`;
-      
-      database.run(sql_create, err => {
-        if (err) {
-          return console.error(err.message);
-        }
-        console.log("Successful creation of the 'Books' table");
-      });
+
+    database.run(sql_create, (err) => {
+      if (err) {
+        return console.error(err.message);
+      }
+      console.log("Successful creation of the 'Books' table");
+    });
     app.listen(3000, () =>
       console.log("Server Running at http://localhost:3000/")
     );
@@ -42,14 +41,17 @@ const initializeDbAndServer = async () => {
 
 initializeDbAndServer();
 
-const hasPriorityAndStatusProperties = (requestQuery) => {
+const hasUsernameAndStatusProperties = (requestQuery) => {
   return (
-    requestQuery.priority !== undefined && requestQuery.status !== undefined
+    requestQuery.username !== undefined && requestQuery.status !== undefined
   );
 };
+const hasUsernameAndTodoProperties = (requestQuery) => {
+  return requestQuery.username !== undefined && requestQuery.todo !== undefined;
+};
 
-const hasPriorityProperty = (requestQuery) => {
-  return requestQuery.priority !== undefined;
+const hasUsernameProperty = (requestQuery) => {
+  return requestQuery.username !== undefined;
 };
 
 const hasStatusProperty = (requestQuery) => {
@@ -57,12 +59,12 @@ const hasStatusProperty = (requestQuery) => {
 };
 
 app.get("/todos/", async (request, response) => {
-   console.log(request.query);
+  console.log(request.query);
   let data = null;
   let getTodosQuery = "";
-  const { search_q = "", priority, status, username } = request.query;
+  const { search_q = "", status, username } = request.query;
   switch (true) {
-    case hasPriorityAndStatusProperties(request.query):
+    case hasUsernameAndStatusProperties(request.query):
       getTodosQuery = `
       SELECT
         *
@@ -71,32 +73,9 @@ app.get("/todos/", async (request, response) => {
       WHERE
         todo LIKE '%${search_q}%'
         AND status = '${status}'
-        AND username = '${username}'
-        AND priority = '${priority}';`;
+        AND username = '${username}';`;
       break;
-    case hasPriorityProperty(request.query):
-      getTodosQuery = `
-      SELECT
-        *
-      FROM
-        todo 
-      WHERE
-        todo LIKE '%${search_q}%'
-        AND username = '${username}'
-        AND priority = '${priority}';`;
-      break;
-    case hasStatusProperty(request.query):
-      getTodosQuery = `
-      SELECT
-        *
-      FROM
-        todo 
-      WHERE
-        todo LIKE '%${search_q}%'
-        AND username = '${username}'
-        AND status = '${status}';`;
-      break;
-    default:
+    case hasUsernameProperty(request.query):
       getTodosQuery = `
       SELECT
         *
@@ -105,6 +84,19 @@ app.get("/todos/", async (request, response) => {
       WHERE
         todo LIKE '%${search_q}%'
         AND username = '${username}';`;
+      break;
+    case hasUsernameAndTodoProperties(request.query):
+      getTodosQuery = `
+        SELECT
+            *
+        FROM
+            todo 
+        WHERE
+            todo LIKE '%${search_q}%'
+            AND username = '${username}';`;
+      break;
+    default:
+      return response.send([]);
   }
 
   data = await database.all(getTodosQuery);
@@ -129,9 +121,9 @@ app.post("/todos/", async (request, response) => {
   const { id, todo, priority, status, username } = request.body;
   const postTodoQuery = `
   INSERT INTO
-    todo (todo, priority, status, username)
+    todo (todo, status, username)
   VALUES
-    ('${todo}', '${priority}', '${status}', '${username}');`;
+    ('${todo}', '${status}', '${username}');`;
   await database.run(postTodoQuery);
   response.send("Todo Successfully Added");
 });
@@ -143,9 +135,6 @@ app.put("/todos/:todoId/", async (request, response) => {
   switch (true) {
     case requestBody.status !== undefined:
       updateColumn = "Status";
-      break;
-    case requestBody.priority !== undefined:
-      updateColumn = "Priority";
       break;
     case requestBody.todo !== undefined:
       updateColumn = "Todo";
@@ -162,7 +151,6 @@ app.put("/todos/:todoId/", async (request, response) => {
 
   const {
     todo = previousTodo.todo,
-    priority = previousTodo.priority,
     status = previousTodo.status,
   } = request.body;
 
@@ -171,7 +159,6 @@ app.put("/todos/:todoId/", async (request, response) => {
       todo
     SET
       todo='${todo}',
-      priority='${priority}',
       status='${status}'
     WHERE
       id = ${todoId};`;
