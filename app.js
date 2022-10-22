@@ -1,12 +1,13 @@
 const express = require("express");
 const { open } = require("sqlite");
 const sqlite3 = require("sqlite3");
+const cors = require('cors')
 const path = require("path");
 
 const databasePath = path.join(__dirname, "todoApplication.db");
 
 const app = express();
-
+app.use(cors())
 app.use(express.json());
 
 let database = null;
@@ -30,8 +31,8 @@ const initializeDbAndServer = async () => {
       }
       console.log("Successful creation of the 'Books' table");
     });
-    app.listen(3000, () =>
-      console.log("Server Running at http://localhost:3000/")
+    app.listen(3010, () =>
+      console.log("Server Running at http://localhost:3010/")
     );
   } catch (error) {
     console.log(`DB Error: ${error.message}`);
@@ -82,8 +83,7 @@ app.get("/todos/", async (request, response) => {
       FROM
         todo 
       WHERE
-        todo LIKE '%${search_q}%'
-        AND username = '${username}';`;
+        username = '${username}';`;
       break;
     case hasUsernameAndTodoProperties(request.query):
       getTodosQuery = `
