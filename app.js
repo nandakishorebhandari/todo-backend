@@ -87,6 +87,23 @@ app.get("/todos/", async (request, response) => {
 });
 
 
+app.get("/todos/admin", async (request, response) => {
+  let data = null;
+  let getTodosQuery = `
+  SELECT
+    *
+  FROM
+    todo;`;
+  data = await database.all(getTodosQuery);
+  const result = data.reduce(function (r, a) {
+        r[a.username] = r[a.username] || [];
+        r[a.username].push(a);
+        return r;
+    }, Object.create(null));
+
+  response.send(data);
+});
+
 app.post("/todos/", async (request, response) => {
   const { todo, status, username } = request.body;
   const postTodoQuery = `
