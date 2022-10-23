@@ -54,7 +54,7 @@ const hasUsernameProperty = (requestQuery) => {
 
 
 app.get("/todos/", async (request, response) => {
-  console.log(request.query);
+  console.log("GET /todos", " query: ", request.query);
   let data = null;
   let getTodosQuery = "";
   const { search_q = "", status, username } = request.query;
@@ -88,6 +88,7 @@ app.get("/todos/", async (request, response) => {
 
 
 app.get("/todos/admin", async (request, response) => {
+  console.log("GET /todos/admin");
   let data = null;
   let getTodosQuery = `
   SELECT
@@ -105,6 +106,7 @@ app.get("/todos/admin", async (request, response) => {
 });
 
 app.post("/todos/", async (request, response) => {
+  console.log("POST /todos", "Req Body: ",request.body );
   const { todo, status, username } = request.body;
   const postTodoQuery = `
   INSERT INTO
@@ -116,6 +118,7 @@ app.post("/todos/", async (request, response) => {
 });
 
 app.put("/todos/:todoId/", async (request, response) => {
+  console.log("PUT /todos/:todoId", "Req Params: ",request.params, "Req Body: ",request.body  );
   const { todoId } = request.params;
   let updateColumn = "";
   const requestBody = request.body;
@@ -155,6 +158,7 @@ app.put("/todos/:todoId/", async (request, response) => {
 });
 
 app.delete("/todos/:todoId/", async (request, response) => {
+  console.log("DELETE /todos/:todoId", "Req Params: ",request.params);
   const { todoId } = request.params;
   const deleteTodoQuery = `
   DELETE FROM
