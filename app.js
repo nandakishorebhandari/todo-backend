@@ -31,7 +31,7 @@ const initializeDbAndServer = async () => {
       }
       console.log("Successful creation of the 'Books' table");
     });
-    app.listen(80, () =>
+    app.listen(process.env.PORT || 80, () =>
       console.log("Server Running at http://localhost:3010/")
     );
   } catch (error) {
